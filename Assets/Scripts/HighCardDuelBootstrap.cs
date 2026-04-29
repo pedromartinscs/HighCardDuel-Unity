@@ -31,12 +31,12 @@ namespace HighCardDuel
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void CreateDemo()
         {
-            if (Object.FindFirstObjectByType<GameController>() != null)
+            if (Object.FindAnyObjectByType<GameController>() != null)
             {
                 return;
             }
 
-            var bootstrapObject = new GameObject("High Card Duel Bootstrap");
+            var bootstrapObject = new GameObject("High Card Survival Bootstrap");
             var bootstrap = bootstrapObject.AddComponent<HighCardDuelBootstrap>();
             bootstrap.Build();
         }
@@ -50,30 +50,62 @@ namespace HighCardDuel
             var uiRoot = canvas.transform;
 
             CreateBackground(uiRoot);
-            CreateText(uiRoot, "Title", "High Card Duel", 44, new Color(0.96f, 0.98f, 0.94f), TextAnchor.MiddleCenter, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -54f), new Vector2(620f, 70f), false);
 
-            var roundText = CreateText(uiRoot, "Round", "Round 0/26", 24, new Color(0.83f, 0.91f, 0.86f), TextAnchor.MiddleCenter, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -110f), new Vector2(360f, 42f), false);
+            var roundText = CreateText(uiRoot, "Round", "Round 0 / 13", 20, new Color(0.83f, 0.91f, 0.86f), TextAnchor.MiddleCenter, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-455f, -64f), new Vector2(230f, 30f), false);
+            var potText = CreateText(uiRoot, "Pot", "Pot: 0", 24, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -4f), new Vector2(190f, 34f), false);
+            var requiredCallText = CreateText(uiRoot, "Required Call", "Call: Check", 19, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(430f, -32f), new Vector2(300f, 28f), false);
+            var matchesText = CreateText(uiRoot, "Matches Survived", "Matches survived: 0", 20, new Color(0.83f, 0.91f, 0.86f), TextAnchor.MiddleCenter, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(430f, -64f), new Vector2(300f, 30f), false);
+            var bestText = CreateText(uiRoot, "Best", "Best: 0 matches | 100 chips", 16, new Color(1f, 0.86f, 0.55f), TextAnchor.MiddleLeft, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(235f, -99f), new Vector2(350f, 26f), false);
 
-            var playerScoreText = CreateText(uiRoot, "Player Score", "Player: 0", 28, Color.white, TextAnchor.MiddleLeft, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(-330f, -112f), new Vector2(250f, 46f), false);
-            var cpuScoreText = CreateText(uiRoot, "CPU Score", "CPU: 0", 28, Color.white, TextAnchor.MiddleRight, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(330f, -112f), new Vector2(250f, 46f), false);
+            var statusText = CreateText(uiRoot, "Status", "Ready", 19, new Color(0.96f, 0.98f, 0.94f), TextAnchor.MiddleLeft, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(235f, -130f), new Vector2(360f, 32f), true);
 
-            CreateText(uiRoot, "Player Label", "PLAYER", 22, new Color(0.76f, 0.92f, 1f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-235f, 182f), new Vector2(240f, 42f), false);
-            CreateText(uiRoot, "CPU Label", "CPU", 22, new Color(1f, 0.84f, 0.76f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(235f, 182f), new Vector2(240f, 42f), false);
+            var cardDisplays = new CardDisplay[4];
+            var playerNameTexts = new Text[4];
+            var playerChipTexts = new Text[4];
+            var playerBetTexts = new Text[4];
+            var playerCueTexts = new Text[4];
 
-            var playerCardDisplay = CreateCardDisplay(uiRoot, "Player Card", new Vector2(-235f, 0f));
-            var cpuCardDisplay = CreateCardDisplay(uiRoot, "CPU Card", new Vector2(235f, 0f));
+            CreatePlayerSeat(uiRoot, "You", true, new Vector2(0.5f, 0f), new Vector2(0f, 196f), 0.58f, new Color(0.76f, 0.92f, 1f), out cardDisplays[0], out playerNameTexts[0], out playerChipTexts[0], out playerBetTexts[0], out playerCueTexts[0]);
+            CreatePlayerSeat(uiRoot, "CPU 1", false, new Vector2(0.5f, 0.5f), new Vector2(-455f, 38f), 0.48f, new Color(1f, 0.84f, 0.76f), out cardDisplays[1], out playerNameTexts[1], out playerChipTexts[1], out playerBetTexts[1], out playerCueTexts[1]);
+            CreatePlayerSeat(uiRoot, "CPU 2", false, new Vector2(0.5f, 1f), new Vector2(0f, -168f), 0.48f, new Color(1f, 0.84f, 0.76f), out cardDisplays[2], out playerNameTexts[2], out playerChipTexts[2], out playerBetTexts[2], out playerCueTexts[2]);
+            CreatePlayerSeat(uiRoot, "CPU 3", false, new Vector2(0.5f, 0.5f), new Vector2(455f, 38f), 0.48f, new Color(1f, 0.84f, 0.76f), out cardDisplays[3], out playerNameTexts[3], out playerChipTexts[3], out playerBetTexts[3], out playerCueTexts[3]);
 
-            var statusText = CreateText(uiRoot, "Status", "Ready", 28, new Color(0.96f, 0.98f, 0.94f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 106f), new Vector2(760f, 70f), true);
-            var startButton = CreateButton(uiRoot, "Start Button", "Start", new Vector2(0f, 48f), out var startButtonText);
+            var startButton = CreateButton(uiRoot, "Start Button", "Start Survival", new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(230f, 46f), new Color(0.95f, 0.65f, 0.22f), out var startButtonText);
+            var callButton = CreateButton(uiRoot, "Call Button", "Check", new Vector2(0.5f, 0f), new Vector2(-180f, 24f), new Vector2(156f, 44f), new Color(0.95f, 0.65f, 0.22f), out var callButtonText);
+            var raiseButton = CreateButton(uiRoot, "Raise Button", "Raise +1", new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(156f, 44f), new Color(0.95f, 0.65f, 0.22f), out var raiseButtonText);
+            var foldButton = CreateButton(uiRoot, "Fold Button", "Fold", new Vector2(0.5f, 0f), new Vector2(180f, 24f), new Vector2(156f, 44f), new Color(0.78f, 0.34f, 0.24f), out var foldButtonText);
 
-            var scoreDisplay = gameObject.AddComponent<ScoreDisplay>();
-            scoreDisplay.Configure(playerScoreText, cpuScoreText, roundText);
+            var endPanel = CreateEndPanel(uiRoot, out var endTitleText, out var endSummaryText, out var playAnotherMatchButton, out var startOverButton, out var quitButton);
 
             var gameUI = gameObject.AddComponent<GameUI>();
-            gameUI.Configure(startButton, startButtonText, statusText);
+            gameUI.Configure(
+                startButton,
+                startButtonText,
+                callButton,
+                callButtonText,
+                raiseButton,
+                raiseButtonText,
+                foldButton,
+                foldButtonText,
+                playAnotherMatchButton,
+                startOverButton,
+                quitButton,
+                endPanel,
+                endTitleText,
+                endSummaryText,
+                statusText,
+                roundText,
+                potText,
+                requiredCallText,
+                matchesText,
+                bestText,
+                playerNameTexts,
+                playerChipTexts,
+                playerBetTexts,
+                playerCueTexts);
 
             var gameController = gameObject.AddComponent<GameController>();
-            gameController.Configure(playerCardDisplay, cpuCardDisplay, scoreDisplay, gameUI, audioManager);
+            gameController.Configure(cardDisplays, gameUI, audioManager);
             gameUI.Bind(gameController);
 
             EnsureEventSystem();
@@ -81,7 +113,7 @@ namespace HighCardDuel
 
         private Canvas CreateCanvas()
         {
-            var canvasObject = new GameObject("High Card Duel Canvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+            var canvasObject = new GameObject("High Card Survival Canvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
             var canvas = canvasObject.GetComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
 
@@ -99,7 +131,7 @@ namespace HighCardDuel
             var camera = Camera.main;
             if (camera == null)
             {
-                camera = Object.FindFirstObjectByType<Camera>();
+                camera = Object.FindAnyObjectByType<Camera>();
             }
 
             if (camera == null)
@@ -124,7 +156,7 @@ namespace HighCardDuel
                 camera.tag = "MainCamera";
             }
 
-            if (Object.FindFirstObjectByType<AudioListener>() == null)
+            if (Object.FindAnyObjectByType<AudioListener>() == null)
             {
                 camera.gameObject.AddComponent<AudioListener>();
             }
@@ -132,7 +164,7 @@ namespace HighCardDuel
 
         private AudioManager ConfigureAudioManager()
         {
-            var audioManager = Object.FindFirstObjectByType<AudioManager>();
+            var audioManager = Object.FindAnyObjectByType<AudioManager>();
             if (audioManager == null)
             {
                 audioManager = gameObject.AddComponent<AudioManager>();
@@ -159,6 +191,65 @@ namespace HighCardDuel
                 fitter.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
                 fitter.aspectRatio = image.sprite.rect.width / image.sprite.rect.height;
             }
+
+            var shade = CreateImage(parent, "Table Shade", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            shade.color = new Color(0f, 0f, 0f, 0.18f);
+        }
+
+        private void CreatePlayerSeat(
+            Transform parent,
+            string playerName,
+            bool isHuman,
+            Vector2 anchor,
+            Vector2 anchoredPosition,
+            float cardScale,
+            Color accentColor,
+            out CardDisplay cardDisplay,
+            out Text nameText,
+            out Text chipText,
+            out Text betText,
+            out Text cueText)
+        {
+            var seatSize = isHuman ? new Vector2(350f, 270f) : new Vector2(250f, 220f);
+            var seat = CreateRect($"{playerName} Seat", parent, anchor, anchor, anchoredPosition, seatSize);
+
+            var backing = CreateImage(seat, "Seat Backing", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            backing.color = isHuman ? new Color(0.04f, 0.21f, 0.24f, 0.12f) : new Color(0.16f, 0.08f, 0.06f, 0.08f);
+
+            nameText = CreateText(seat, "Name", playerName, isHuman ? 23 : 19, accentColor, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, isHuman ? 118f : 96f), new Vector2(seatSize.x, 28f), false);
+            nameText.fontStyle = FontStyle.Bold;
+
+            chipText = CreateText(seat, "Chips", "100 chips", isHuman ? 19 : 16, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, isHuman ? 94f : 73f), new Vector2(seatSize.x, 24f), false);
+            cueText = CreateText(seat, "Cue", isHuman ? "Your card is private." : "Hidden", isHuman ? 16 : 13, isHuman ? new Color(1f, 0.93f, 0.65f) : new Color(0.82f, 0.86f, 0.82f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, isHuman ? 70f : 56f), new Vector2(seatSize.x, 24f), true);
+            betText = CreateText(seat, "Round Bet", "Ready", isHuman ? 15 : 13, new Color(0.86f, 0.92f, 0.86f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, isHuman ? -116f : 37f), new Vector2(seatSize.x, 22f), false);
+
+            var scaleRoot = CreateRect("Card Scale Root", seat, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, isHuman ? -50f : -58f), new Vector2(250f, 330f));
+            scaleRoot.localScale = new Vector3(cardScale, cardScale, 1f);
+            cardDisplay = CreateCardDisplay(scaleRoot, "Card", Vector2.zero);
+        }
+
+        private GameObject CreateEndPanel(
+            Transform parent,
+            out Text titleText,
+            out Text summaryText,
+            out Button playAnotherMatchButton,
+            out Button startOverButton,
+            out Button quitButton)
+        {
+            var panel = CreateRect("End Match Panel", parent, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(660f, 350f));
+            var panelImage = panel.gameObject.AddComponent<Image>();
+            panelImage.color = new Color(0.03f, 0.08f, 0.07f, 0.93f);
+
+            titleText = CreateText(panel, "Title", "Match Survived", 34, new Color(1f, 0.88f, 0.55f), TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 118f), new Vector2(560f, 56f), false);
+            titleText.fontStyle = FontStyle.Bold;
+            summaryText = CreateText(panel, "Summary", "", 22, Color.white, TextAnchor.MiddleCenter, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 35f), new Vector2(560f, 118f), true);
+
+            playAnotherMatchButton = CreateButton(panel, "Play Another Match", "Play Another", new Vector2(0.5f, 0.5f), new Vector2(-215f, -106f), new Vector2(190f, 50f), new Color(0.95f, 0.65f, 0.22f), out _);
+            startOverButton = CreateButton(panel, "Start Over", "Start Over", new Vector2(0.5f, 0.5f), new Vector2(0f, -106f), new Vector2(170f, 50f), new Color(0.86f, 0.79f, 0.62f), out _);
+            quitButton = CreateButton(panel, "Quit For Now", "Quit for Now", new Vector2(0.5f, 0.5f), new Vector2(205f, -106f), new Vector2(180f, 50f), new Color(0.78f, 0.34f, 0.24f), out _);
+
+            panel.gameObject.SetActive(false);
+            return panel.gameObject;
         }
 
         private CardDisplay CreateCardDisplay(Transform parent, string name, Vector2 anchoredPosition)
@@ -212,64 +303,31 @@ namespace HighCardDuel
             return display;
         }
 
-        private Sprite GetSprite(ref Sprite cachedSprite, params string[] assetPaths)
+        private Button CreateButton(
+            Transform parent,
+            string name,
+            string label,
+            Vector2 anchor,
+            Vector2 anchoredPosition,
+            Vector2 size,
+            Color normalColor,
+            out Text buttonText)
         {
-            if (cachedSprite != null)
-            {
-                return cachedSprite;
-            }
-
-#if UNITY_EDITOR
-            foreach (var assetPath in assetPaths)
-            {
-                if (string.IsNullOrWhiteSpace(assetPath))
-                {
-                    continue;
-                }
-
-                cachedSprite = AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
-                if (cachedSprite == null)
-                {
-                    var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
-                    if (texture != null)
-                    {
-                        cachedSprite = Sprite.Create(
-                            texture,
-                            new Rect(0f, 0f, texture.width, texture.height),
-                            new Vector2(0.5f, 0.5f),
-                            100f,
-                            0,
-                            SpriteMeshType.FullRect);
-                    }
-                }
-
-                if (cachedSprite != null)
-                {
-                    return cachedSprite;
-                }
-            }
-#endif
-
-            return cachedSprite;
-        }
-
-        private Button CreateButton(Transform parent, string name, string label, Vector2 anchoredPosition, out Text buttonText)
-        {
-            var buttonRect = CreateRect(name, parent, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), anchoredPosition, new Vector2(210f, 58f));
+            var buttonRect = CreateRect(name, parent, anchor, anchor, anchoredPosition, size);
             var image = buttonRect.gameObject.AddComponent<Image>();
-            image.color = new Color(0.95f, 0.65f, 0.22f);
+            image.color = normalColor;
 
             var button = buttonRect.gameObject.AddComponent<Button>();
             button.targetGraphic = image;
 
             var colors = button.colors;
-            colors.normalColor = new Color(0.95f, 0.65f, 0.22f);
-            colors.highlightedColor = new Color(1f, 0.76f, 0.33f);
-            colors.pressedColor = new Color(0.79f, 0.49f, 0.14f);
-            colors.disabledColor = new Color(0.47f, 0.49f, 0.45f);
+            colors.normalColor = normalColor;
+            colors.highlightedColor = Color.Lerp(normalColor, Color.white, 0.18f);
+            colors.pressedColor = Color.Lerp(normalColor, Color.black, 0.18f);
+            colors.disabledColor = new Color(0.43f, 0.45f, 0.42f);
             button.colors = colors;
 
-            buttonText = CreateText(buttonRect, "Label", label, 24, new Color(0.09f, 0.11f, 0.11f), TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, false);
+            buttonText = CreateText(buttonRect, "Label", label, 22, new Color(0.09f, 0.11f, 0.11f), TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, true);
             buttonText.fontStyle = FontStyle.Bold;
 
             return button;
@@ -315,7 +373,7 @@ namespace HighCardDuel
             text.verticalOverflow = VerticalWrapMode.Truncate;
             text.raycastTarget = false;
             text.resizeTextForBestFit = bestFit;
-            text.resizeTextMinSize = 18;
+            text.resizeTextMinSize = 12;
             text.resizeTextMaxSize = fontSize;
             return text;
         }
@@ -337,6 +395,47 @@ namespace HighCardDuel
             rect.sizeDelta = sizeDelta;
             rect.pivot = new Vector2(0.5f, 0.5f);
             return rect;
+        }
+
+        private Sprite GetSprite(ref Sprite cachedSprite, params string[] assetPaths)
+        {
+            if (cachedSprite != null)
+            {
+                return cachedSprite;
+            }
+
+#if UNITY_EDITOR
+            foreach (var assetPath in assetPaths)
+            {
+                if (string.IsNullOrWhiteSpace(assetPath))
+                {
+                    continue;
+                }
+
+                cachedSprite = AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
+                if (cachedSprite == null)
+                {
+                    var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+                    if (texture != null)
+                    {
+                        cachedSprite = Sprite.Create(
+                            texture,
+                            new Rect(0f, 0f, texture.width, texture.height),
+                            new Vector2(0.5f, 0.5f),
+                            100f,
+                            0,
+                            SpriteMeshType.FullRect);
+                    }
+                }
+
+                if (cachedSprite != null)
+                {
+                    return cachedSprite;
+                }
+            }
+#endif
+
+            return cachedSprite;
         }
 
         private Font GetDefaultFont()
@@ -362,7 +461,7 @@ namespace HighCardDuel
 
         private static void EnsureEventSystem()
         {
-            if (Object.FindFirstObjectByType<EventSystem>() != null)
+            if (Object.FindAnyObjectByType<EventSystem>() != null)
             {
                 return;
             }
