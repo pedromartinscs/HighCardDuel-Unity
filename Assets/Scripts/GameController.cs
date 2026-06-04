@@ -707,6 +707,11 @@ namespace HighCardDuel
             player.Committed += paid;
             pot += paid;
 
+            if (paid > 0)
+            {
+                audioManager?.PlayChipStack();
+            }
+
             if (player.IsHuman)
             {
                 humanChips = player.Chips;

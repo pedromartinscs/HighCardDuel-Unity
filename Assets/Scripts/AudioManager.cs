@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -32,12 +33,20 @@ namespace HighCardDuel
             "Assets/Audio/SFX/Victory_01.mp3"
         };
 
+        private static readonly string[] ChipStackPaths =
+        {
+            "Assets/Audio/SFX/chips-stack-1.ogg",
+            "Assets/Audio/SFX/chips-stack-2.ogg",
+            "Assets/Audio/SFX/chips-stack-3.ogg"
+        };
+
         [SerializeField, Range(0f, 1f)] private float musicVolume = 0.35f;
         [SerializeField, Range(0f, 1f)] private float sfxVolume = 0.85f;
         [SerializeField] private AudioClip musicClip;
         [SerializeField] private AudioClip cardFlipClip;
         [SerializeField] private AudioClip scorePointClip;
         [SerializeField] private AudioClip victoryClip;
+        [SerializeField] private AudioClip[] chipStackClips;
 
         private AudioSource musicSource;
         private AudioSource sfxSource;
@@ -115,6 +124,11 @@ namespace HighCardDuel
             PlaySfx(victoryClip);
         }
 
+        public void PlayChipStack()
+        {
+            PlaySfx(GetRandomClip(chipStackClips));
+        }
+
         private void EnsureSources()
         {
             if (musicSource == null)
@@ -140,6 +154,7 @@ namespace HighCardDuel
             cardFlipClip = cardFlipClip != null ? cardFlipClip : LoadAudioClip(CardFlipPaths);
             scorePointClip = scorePointClip != null ? scorePointClip : LoadAudioClip(ScorePointPaths);
             victoryClip = victoryClip != null ? victoryClip : LoadAudioClip(VictoryPaths);
+            chipStackClips = HasAnyClip(chipStackClips) ? chipStackClips : LoadAudioClips(ChipStackPaths);
         }
 
         private void ApplyVolumes()
@@ -175,6 +190,63 @@ namespace HighCardDuel
 #endif
 
             return null;
+        }
+
+        private static AudioClip[] LoadAudioClips(string[] assetPaths)
+        {
+#if UNITY_EDITOR
+            var clips = new List<AudioClip>(assetPaths.Length);
+            foreach (var assetPath in assetPaths)
+            {
+                var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(assetPath);
+                if (clip != null)
+                {
+                    clips.Add(clip);
+                }
+            }
+
+            return clips.ToArray();
+#else
+            return null;
+#endif
+        }
+
+        private static AudioClip GetRandomClip(AudioClip[] clips)
+        {
+            if (!HasAnyClip(clips))
+            {
+                return null;
+            }
+
+            var startIndex = Random.Range(0, clips.Length);
+            for (var offset = 0; offset < clips.Length; offset++)
+            {
+                var clip = clips[(startIndex + offset) % clips.Length];
+                if (clip != null)
+                {
+                    return clip;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool HasAnyClip(AudioClip[] clips)
+        {
+            if (clips == null)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < clips.Length; i++)
+            {
+                if (clips[i] != null)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
